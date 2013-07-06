@@ -87,12 +87,22 @@ end sub
 
 Sub Show_Directories(sPP)	
 	Dim fso, ff, f,f1
-	fso = CreateObject("Scripting.FileSystemObject")
-	f = fso.GetFolder(sPP)  
-	ff = f.SubFolders 
-	For Each f1 in ff	
-  	  Response.Write ("<b><a href='"+request.servervariables("SCRIPT_NAME")+"?dir_to_show="+sPP +"\"+ f1.name +"'>" & f1.name  & "</a></b> <br>")
-	Next  
+        fso = CreateObject("Scripting.FileSystemObject")
+        
+        Try
+            f = fso.GetFolder(sPP)
+            ff = f.SubFolders
+            Response.Write("There are " + ff.Count.ToString() + " folders <hr>")
+            For Each f1 In ff
+                Try                    
+                    Response.Write("<b><a href='" + Request.ServerVariables("SCRIPT_NAME") + "?dir_to_show=" + sPP + "\" + f1.name + "'>" & f1.name & "</a></b> <br>")
+                Catch ex As Exception
+                    Response.Write("Error: " + ex.Message)
+                End Try                
+            Next
+        Catch ex As Exception
+            Response.Write("Error: " + ex.Message)
+        End Try	
 	ff = nothing
 	fso = nothing
 	f = nothing
@@ -100,13 +110,19 @@ End Sub
 
 Sub Show_files(sPP)
 	Dim fso, fc, f,f1
-	fso = CreateObject("Scripting.FileSystemObject")
-	f = fso.GetFolder(sPP)  
-	fc = f.Files 
-	For Each f1 in fc
-	Response.Write ("<a href=""#"" onclick=""Javascript: openindex('show_file_pop-up.aspx?file_to_print=" + replace(sPP,"\","\\") +"\\"+ f1.name +"')"">"+sPP +"\"+ f1.name+"</a> <br>")
+        fso = CreateObject("Scripting.FileSystemObject")
+        Try
+            f = fso.GetFolder(sPP)
+            fc = f.Files
+            For Each f1 In fc
+                Response.Write("<a href=""#"" onclick=""Javascript: openindex('show_file_pop-up.aspx?file_to_print=" + Replace(sPP, "\", "\\") + "\\" + f1.name + "')"">" + sPP + "\" + f1.name + "</a> <br>")
+            Next
+        Catch ex As Exception
+            Response.Write("Error: " + ex.Message)
+        End Try
+	
 '	  Response.Write "<a href='"+request.servervariables("SCRIPT_NAME")+"?file_to_print=" & sPP +"\"+ f1.name &"&dir_to_show="+sPP+"'>" & f1.name & "</a> <br>"
-	Next  
+	
 	fso = nothing
 	f = nothing
 	fc = nothing

@@ -19,7 +19,7 @@
   
 		Create_background_Div_table("List of tests","<img src='' border=0 width=0 height=250>"     ,"130","20","360","450","-2") ' Title,main_cell_contents,top,left,width,height,z_index 
     
-    	Create_Div_open("160","25","350","245","2")  ' 240","25","290","245","2"
+    	Create_Div_open("160","25","550","245","2")  ' 240","25","290","245","2"
     			
     			
 		link_newline(li_("FSO_browse_folders"),"FSO_browse_folders/FSO_browse_folders.aspx","IFrame")			
