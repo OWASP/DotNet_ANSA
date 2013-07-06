@@ -115,7 +115,7 @@ Sub Show_files(sPP)
             f = fso.GetFolder(sPP)
             fc = f.Files
             For Each f1 In fc
-                Response.Write("<a href=""#"" onclick=""Javascript: openindex('show_file_pop-up.aspx?file_to_print=" + Replace(sPP, "\", "\\") + "\\" + f1.name + "')"">" + sPP + "\" + f1.name + "</a> <br>")
+                Response.Write("<a href='/ANSA_V0_31b/security_tests/FSO_browse_folders/show_file_pop-up.aspx?file_to_print=" + Replace(sPP, "\", "\\") + "\\" + f1.name + "')"" target=blank>" + sPP + "\" + f1.name + "</a> <br>")
             Next
         Catch ex As Exception
             Response.Write("Error: " + ex.Message)
