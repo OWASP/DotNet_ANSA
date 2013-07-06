@@ -1,0 +1,72 @@
+BODY
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000066;
+    FONT-FAMILY: Verdana
+}
+
+TD
+{
+    FONT-SIZE: 7pt;
+    COLOR: #000066;
+    FONT-FAMILY: Verdana
+}
+P
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000066;
+    FONT-FAMILY: Verdana
+}
+A
+{
+    FONT-WEIGHT: bolder;
+    FONT-SIZE: 8pt;
+    COLOR: royalblue;
+    FONT-FAMILY: Verdana;
+    TEXT-DECORATION: none
+}
+A:active
+{
+}
+A:link
+{
+}
+A:hover
+{
+    TEXT-DECORATION: underline
+}
+
+.A_menu
+{
+    FONT-WEIGHT: bolder;
+    FONT-SIZE: 8pt;
+    COLOR: #3C4369;
+    FONT-FAMILY: Verdana;
+    TEXT-DECORATION: none
+}
+.A_menu:active
+{
+	COLOR: #3C4369;
+}
+.A_menu:link
+{
+	COLOR: #3C4369;
+}
+.A_menu:hover
+{
+	COLOR: white;
+    TEXT-DECORATION: none
+}
+
+UL
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000066;
+    FONT-FAMILY: Verdana
+}
+
+B
+{
+    FONT-SIZE: 8pt;
+    FONT-FAMILY: Verdana
+}
