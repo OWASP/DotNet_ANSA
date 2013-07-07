@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>Win32</ID>
+	<Name>Win32</Name>
+	<Description>Using Direct calls to Win32 funcions (unManaged code)</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+				Declare Auto Function RevertToSelf Lib "advapi32.dll" () As Integer
+				Declare Function WinExec Lib "kernel32" Alias "WinExec" (ByVal lpCmdLine As String, ByVal nCmdShow As Long) As Long
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>win32.CreateProcess.WinExec</ID>
+		<Name>win32.CreateProcess.WinExec</Name>
+		<Description>Using a direct Win32 call to WinExec to start a new process</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="win32CreateProcessWinExec">
+			<![CDATA[
+
+				Private function win32CreateProcessWinExec
+					try 	
+						RevertToSelf
+
+						if (WinExec(System.Environment.systemDirectory + "\..\Microsoft.NET\Framework\v1.1.4322\csc.exe",10) <> 0) then
+							return True
+						else 
+							return False
+						end if
+					catch					
+						return false
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>High</Risk>
+		<Color>Red</Color>
+		<Success.Comment>It is possible to start a new process Using a direct Win32 call to WinExec</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes></DevelopmentNotes>
+	</vulnerability>
+
+
+</MSHE.VulXML>

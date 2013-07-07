@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SamSheGlobalVariables>
+	<Debug>True</Debug>
+	<Language.ASP>
+		<Template.Page>vulnerabilityPageTemplate.asp</Template.Page>
+		<CallerFunction.SourceCode>
+		    <![CDATA[
+	
+			Private function #testFunctionName#()
+				name = "_name"
+				risk = "_risk"
+				color = "_color"
+				successComment = "_success.comment"
+				failComment = "_fail.comment"
+				functionResponse = #mainFunctionName#
+				if cstr(functionResponse)<>"False" then
+					if cstr(functionResponse) <> "True" then
+						successComment = successComment + " (" + cstr(functionResponse) +")"
+					end if					
+					Call addItemToXmlVulnerabilityResults(name,color,risk,successComment)
+					#testFunctionName# = true
+					exit function
+				end if
+				if session("debug") then
+					Call addItemToXmlVulnerabilityResults(name,"black","no",failComment)
+				end if
+				#testFunctionName# = false
+			end function				
+		     ]]>
+		</CallerFunction.SourceCode>	
+
+	</Language.ASP>
+	<Language.ASPX>
+		<Template.Page>vulnerabilityPageTemplate.aspx</Template.Page>
+		<CallerFunction.SourceCode>
+		    <![CDATA[	
+			Private function #testFunctionName#()
+				dim name as string = "_name"
+				dim risk as string = "_risk"
+				dim color as string = "_color"
+				dim successComment as string = "_success.comment"
+				dim failComment as string = "_fail.comment"
+				dim functionResponse = #mainFunctionName#
+				if cstr(functionResponse)<>"False" then
+					if cstr(functionResponse) <> "True" then
+						successComment = successComment + " (" + cstr(functionResponse) +")"
+					end if					
+					addItemToXmlVulnerabilityResults(name,color,risk,successComment)
+					return true
+				end if
+				if session("debug") then
+					addItemToXmlVulnerabilityResults(name,"black","no",failComment)
+				end if
+				return false
+			end function
+					
+		     ]]>
+		</CallerFunction.SourceCode>	
+
+	</Language.ASPX>
+	<ptrTo.testFunctionName>#testFunctionName#</ptrTo.testFunctionName>
+	<ptrTo.mainFunctionName>#mainFunctionName#</ptrTo.mainFunctionName>
+	<CopyrightNotice>
+		    <![CDATA[	
+			<!--
+
+			 Copyright (c) 2004 Free Software Foundation
+			 developed under the custody of the
+			 Open Web Application Security Project
+			 (http://www.owasp.org)
+ 
+ 			 This file is part of the OWASP ANBS (Asp.Net Baseline Security).
+
+			 The ANBS is free software; you can redistribute it and/or modify it 
+			 under the terms of the GNU General Public License as published by
+			 the Free Software Foundation; either version 2 of the License, or
+			 (at your option) any later version.
+  
+			 This tool is distributed in the hope that it will be useful,
+			 but WITHOUT ANY WARRANTY; without even the implied warranty of
+			 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+			 See the GNU General Public License for more details.
+ 
+			 The valid license text for this file can be retrieved with
+			 the call:   java -cp owasp.jar org.owasp.LICENSE
+ 
+			 If you are not able to view the LICENSE that way, which should
+			 always be possible within a valid and working ANBS release,
+			 please write to the Free Software Foundation, Inc.,
+			 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+			 to get a copy of the GNU General Public License or to report a
+			 possible license violation.
+ 
+			 Author: Dinis Cruz 
+			         dinis@ddplus.net
+			-->
+		     ]]>
+	</CopyrightNotice>
+</SamSheGlobalVariables>

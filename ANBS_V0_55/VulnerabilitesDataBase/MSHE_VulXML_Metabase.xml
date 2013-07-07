@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>Metabase</ID>
+	<Name>Metabase</Name>
+	<Description>Check for Metabase vulnerabilities</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+				<%@ Import namespace="System.Reflection" %>
+				<%@ import Namespace="System.IO" %>
+				<%@ import Namespace="System.Security" %>
+				<%@ import Namespace="System.Security.Principal	" %>
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+
+				Declare Auto Function RevertToSelf Lib "advapi32.dll" () As Integer
+
+				Private MSCorLib_Dll = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\mscorlib.dll"
+				Private System_Dll = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\system.dll"
+				Private strIdentityBeforeRevertToSelf =  WindowsIdentity.GetCurrent().name	
+
+				Private Function InvokeMethod_for_Assembly(assemblyName,className,methodName,publicOrPrivateFlag,arrayParams)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(AssemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(ClassName)
+					InvokeMethod_for_Assembly = Reflected_Class.InvokeMember(methodName,publicOrPrivateFlag or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, Nothing,arrayParams)			
+				end function
+	
+				Private Function CreateInstance_for_Instance(assemblyName,className,methodName, publicOrPrivateFlag)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(assemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(className)
+					CreateInstance_for_Instance = Reflected_Class.InvokeMember(methodName, publicOrPrivateFlag or BindingFlags.Instance or BindingFlags.CreateInstance, Nothing, Reflected_Class , Nothing) 
+				end function	
+
+				Public Function InvokePrivateMemberStatic(objClassToReflect, strPrivateMethodToCall, objArrayWithParameters)
+					dim objType as Type = objClassToReflect.GetType()
+					InvokePrivateMemberStatic = objType.InvokeMember(strPrivateMethodToCall,BindingFlags.NonPublic or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, objClassToReflect,objArrayWithParameters)
+				end function
+
+
+				Public Function InvokePrivateMemberInstance(objClassToReflect, strPrivateMethodToCall, objArrayWithParameters)
+					dim objType as Type = objClassToReflect.GetType()
+					InvokePrivateMemberInstance = objType.InvokeMember(strPrivateMethodToCall,BindingFlags.NonPublic or BindingFlags.Instance or BindingFlags.InvokeMethod, Nothing, objClassToReflect,objArrayWithParameters)
+				end function
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>Read.Metabase.file</ID>
+		<Name>Read.Metabase.file</Name>
+		<Description>Attempt to read the Metabase file Directly</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>no</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="readMetabaseFile">
+			<![CDATA[
+
+				Private function readMetabaseFile
+					try 	
+
+						Dim strMetabaseDirectory = System.Environment.CurrentDirectory
+						Dim xmlMetabaseFullPath as String = strMetabaseDirectory + "\metabase.xml"
+						Dim xmlMetabase as New System.XML.XMLdocument
+						xmlMetabaseFullPath = replace(xmlMetabaseFullPath,"\","\\")
+
+						xmlMetabase.Load(xmlMetabaseFullPath)
+						dim rootElement = xmlMetabase.documentElement
+
+						return True
+					catch					
+						return false
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It was possible to open directly the Metabase File 'Metabase.xml'</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes>
+			
+			- The ACL of file access must be tested before the XMLDocument.Load function is called
+
+		</DevelopmentNotes>
+
+	</vulnerability>
+
+	<vulnerability>
+		<ID>Read.Metabase.Backup.files</ID>
+		<Name>Read.Metabase.Backup.files</Name>
+		<Description>Attempt to read the Metabase Backup files Directly</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>no</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="readMetabaseBackupFiles">
+			<![CDATA[
+
+				Private function readMetabaseBackupFiles
+					Dim metabaseRootDirectory = System.Environment.CurrentDirectory + "\MetaBack\"
+					Dim metabaseBackupsFilter = "*.MD*"
+					Dim metabasebackupFile
+					Dim xmlMetabase as New System.XML.XMLdocument
+					Dim intFoundCount as integer = 0
+					Try 
+						
+					
+					dim listOfMetabaseBackupFiles = Directory.GetFiles(metabaseRootDirectory,metabaseBackupsFilter)
+
+						for each metabasebackupFile in listOfMetabaseBackupFiles							
+							xmlMetabase.Load(metabasebackupFile)
+							intFoundCount = intFoundCount + 1
+						next
+						return cstr(intFoundCount) + " Files"
+					catch	
+						if intFoundCount = 0 then				
+							return false
+						else
+							return cstr(intFoundCount) + " Files"
+						end if
+					end try									
+				end function
+
+		
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It was possible to open directly the Metabase Backups Files</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes>
+			
+			- The ACL of file access must be tested before the XMLDocument.Load function is called
+			- The 'intFoundCount' logic is flawed since it will stop counting when an error occours (i.e. access it denied)			
+
+		</DevelopmentNotes>
+	</vulnerability>
+
+
+	<vulnerability>
+		<ID>Metabase.AfterRevertToSelf.Read.Main.AnonymousAccountDetails</ID>
+		<Name>Metabase.AfterRevertToSelf.Read.Main.AnonymousAccountDetails</Name>
+		<Description>After Calling RevertToSelf, read the main Anonymous Username and Password from the metabase</Description>
+		<Require.Admin.Rights></Require.Admin.Rights>
+		<Require.Full.Trust></Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="metabaseAfterRevertToSelfReadMainAnonymousAccountDetails">
+			<![CDATA[
+
+				Private function metabaseAfterRevertToSelfReadMainAnonymousAccountDetails
+					try 	
+						RevertToSelf
+
+						Dim metaObj = New IISConfig.Metabase()	
+						metaObj.OpenLocalMachine()
+						Dim currentPath = "\LM\W3SVC"
+
+						Dim objMetaKeyData = InvokePrivateMemberInstance(metaObj,"GetAllData", new Object() {currentPath,False})
+		
+
+						dim objMetabaseRecordData
+						dim strWAMUserName as Boolean = False
+						dim strWAMUserPass as Boolean = False
+						dim strDummyVariable
+
+						for each objMetabaseRecordData in objMetaKeyData
+							if objMetabaseRecordData.Name = "WAMUserName" then 
+								strDummyVariable = objMetabaseRecordData.Data ' Just to make sure this value can be read
+								strWAMUserName = True
+							end if
+							if objMetabaseRecordData.Name = "WAMUserPass" then
+								strDummyVariable = objMetabaseRecordData.Data ' Just to make sure this value can be read
+								strWAMUserPass = True
+							end if
+						next
+						if strWAMUserName and strWAMUserPass					
+							return True
+						else
+							return False
+						end if
+					catch					
+						return False
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It was possible to (After Calling RevertToSelf) read the main Anonymous Username and Password from the metabase</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes> 
+					- I'm not happy with this method to read this data, I would prefer to get the Records data directly (versus having to go through all 'records' in this 'Metabase Key')
+		</DevelopmentNotes>
+	</vulnerability>	
+
+	<vulnerability>
+		<ID>Metabase.AfterRevertToSelf.Read.Websites.AnonymousAccountDetails</ID>
+		<Name>Metabase.AfterRevertToSelf.Read.Websites.AnonymousAccountDetails</Name>
+		<Description>After Calling RevertToSelf, read the other co-hosted Websites's Anonymous Username and Password from the metabase</Description>
+		<Require.Admin.Rights></Require.Admin.Rights>
+		<Require.Full.Trust></Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="metabaseAfterRevertToSelfReadWebsitesAnonymousAccountDetails">
+			<![CDATA[
+
+				Private function metabaseAfterRevertToSelfReadWebsitesAnonymousAccountDetails
+					try						
+						RevertToSelf
+						dim strIdentityAfterRevertToSelf =  WindowsIdentity.GetCurrent().name	
+						Dim metaObj = New IISConfig.Metabase()	
+						metaObj.OpenLocalMachine()
+						Dim strMainPath = "\LM\W3SVC"
+	
+						dim objMetabaseRecordData
+						dim strWAMUserName as Boolean = False
+						dim strWAMUserPass as Boolean = False
+						dim strDummyVariable
+
+						Dim objMetaSubKeys = InvokePrivateMemberInstance(metaObj,"GetSubkeys", new Object() {strMainPath})
+						Dim strSubKeyName
+						Dim strSubKeyPath	
+						Dim objSubKeyData
+						Dim intFoundCount = 0
+						for each strSubKeyName in objMetaSubKeys
+							try 
+								strSubKeyPath = strMainPath + "\" + strSubKeyName + "\root"
+								Dim objMetaKeyData = InvokePrivateMemberInstance(metaObj,"GetAllData", new Object() {strSubKeyPath,False})
+								strWAMUserName = False
+								strWAMUserPass = False
+								for each objMetabaseRecordData in objMetaKeyData
+									if objMetabaseRecordData.Name = "AnonymousUserName" then 
+										if (objMetabaseRecordData.Data <> strIdentityBeforeRevertToSelf) and (objMetabaseRecordData.Data <> strIdentityAfterRevertToSelf) then   ' Only the ones that we don't know count
+											strWAMUserName = True
+										end if
+									end if
+									if objMetabaseRecordData.Name = "AnonymousUserPass" then
+										strDummyVariable = objMetabaseRecordData.Data ' Just to make sure this value can be read
+										strWAMUserPass = True
+									end if
+								next
+								if strWAMUserName and strWAMUserPass					
+									intFoundCount = intFoundCount + 1
+								end if
+							Catch
+							end Try
+						next
+						
+						if intFoundCount > 0 then 	
+							return cstr(intFoundCount) + " accounts found"
+						else
+							return false
+						end if
+					catch					
+						return false
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>CRITICAL!</Risk>
+		<Color>Red</Color>
+		<Success.Comment>It was possible to (After Calling RevertToSelf) read (from the metabase) the Anonymous Username and Password of other co-hosted Websites </Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes> 
+					- I'm not happy with this method to read this data, I would prefer to get the Records data directly (versus having to go through all 'records' in this 'Metabase Key')
+		</DevelopmentNotes>
+	</vulnerability>
+
+</MSHE.VulXML>

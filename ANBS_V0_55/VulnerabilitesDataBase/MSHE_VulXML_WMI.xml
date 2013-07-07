@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>WMI</ID>
+	<Name>WMI tests</Name>
+	<Description>These are WMI tests</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+
+				Private function Test()
+					 Test = "testing 123"
+				end function
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>WMI.Enabled</ID>	
+		<Name>WMI Enabled</Name>
+		<Description>Test to see if WMI accesses are enabled and this user can make WMI calls</Description>
+		<Require.Admin.Rights>No</Require.Admin.Rights>
+		<Require.Full.Trust>No</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="WMIEnabled">
+			<![CDATA[
+
+
+				Private function WMIEnabled
+					dim objProcessInfo , winObj, item , Process_properties, Process_user, Process_domain
+
+					try 	
+						winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+						return true
+					catch					
+						return false
+					end try									
+				end function
+
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It is possible to make WMI calls</Success.Comment>
+		<Fail.Comment>It is not Possible to make WMI calls (no more tests will be done)</Fail.Comment>
+		<Solution.Description>Deny permissions on the IIS_WPG group on the ".\system32\wbem" directory </Solution.Description>
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.Process</ID>
+			<Name>WMI.Enabled.List.Process</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListProcesses">
+				<![CDATA[
+
+					
+					Private function WMIEnabled_ListProcesses
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_Process"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Medium</Risk>
+			<Color>Orange</Color>
+			<Success.Comment>It is possible to use WMI to list the running processes</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WMI to list the running processes</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.UserNames</ID>
+			<Name>WMI.Enabled.List.UserNames</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListUserNames">
+				<![CDATA[
+					
+					Private function WMIEnabled_ListUserNames
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_UserAccount"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>High</Risk>
+			<Color>red</Color>
+			<Success.Comment>It is possible to list the current UserNames</Success.Comment>
+			<Fail.Comment>it is NOT possible to enumerate Usernames though WMI</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+		<vulnerability>
+			<ID>WMI.Enabled.Read.System.LogFiles</ID>
+			<Name>WMI.Enabled.Read.System.LogFiles</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ReadSystemLog">
+				<![CDATA[
+					
+					Private function WMIEnabled_ReadSystemLog
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_NTLogEvent where Logfile='System'"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Low</Risk>
+			<Color>Green</Color>
+			<Success.Comment>It is possible to Read events from the System Log</Success.Comment>
+			<Fail.Comment>it is NOT possible to Read events from the System Log though WMI</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+		<vulnerability>
+			<ID>WMI.Enabled.Read.Application.Log</ID>
+			<Name>WMI.Enabled.Read.Application.Log</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ReadApplicationLog">
+				<![CDATA[
+					
+					Private function WMIEnabled_ReadApplicationLog
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_NTLogEvent where Logfile='Application'"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Low</Risk>
+			<Color>Green</Color>
+			<Success.Comment>It is possible to Read events from the Application Log</Success.Comment>
+			<Fail.Comment>it is NOT possible to read events from the Application Log though WMI</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.Network.Shares</ID>
+			<Name>WMI.Enabled.List.Network.Shares</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListNetworkShares">
+				<![CDATA[
+					
+					Private function WMIEnabled_ListNetworkShares
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_Share"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Medium</Risk>
+			<Color>Orange</Color>
+			<Success.Comment>It is possible to List the current Network Shares</Success.Comment>
+			<Fail.Comment>it is NOT possible to list the current Network Shares though WMI</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.Services</ID>
+			<Name>WMI.Enabled.List.Services</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListServices">
+				<![CDATA[
+			
+					Private function WMIEnabled_ListServices
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_Service"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Medium</Risk>
+			<Color>Orange</Color>
+			<Success.Comment>It is possible to use WMI to list the running Services</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WMI to list the running Services</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.Logical.Disks</ID>
+			<Name>WMI.Enabled.List.Logical.Disks</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListLogicalDisks">
+				<![CDATA[
+					
+					Private function WMIEnabled_ListLogicalDisks
+						dim objProcessInfo , winObj, item
+						dim wmiFunctionToTest = "Win32_LogicalDisk"
+						try 
+							winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")			
+							objProcessInfo = winObj.ExecQuery("Select * from " + wmiFunctionToTest)
+							for each item in objProcessInfo	
+								return  true ' only need to do it once to know it is ok (this also ensures that we where able to fetch at least one value)
+							next
+						catch											
+						end try
+						return false 
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>Low</Risk>
+			<Color>green</Color>
+			<Success.Comment>It is possible to use WMI to list the existent Logical Disks</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WMI to list the existent Logical Disks</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+		<vulnerability>
+			<ID>WMI.Enabled.List.Anonymous.Account.Details</ID>
+			<Name>WMI.Enabled.List.Anonymous.Account.Details</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>no</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_ListAnonymousAccountDetails">
+				<![CDATA[
+			
+					Private function WMIEnabled_ListAnonymousAccountDetails
+						Dim Count as integer = 0				
+						Dim testMetabaseAccess as boolean
+						try
+							Dim IIsComputerObj, iFlags ,providerObj ,nodeObj ,item, IP							
+							IIsComputerObj = CreateObject("WbemScripting.SWbemLocator") 			' Create an instance of the IIsComputer object
+							providerObj = IIsComputerObj.ConnectServer("127.0.0.1", "root/microsoftIISv2")
+							nodeObj  = providerObj.InstancesOf("IIsWebVirtualDirSetting") 			
+							for each item in nodeObj
+								Count = Count +1
+								If Count > 2 then exit for
+							next		
+				
+							testMetabaseAccess = true
+						catch
+							testMetabaseAccess = false
+						end try
+						If Count < 2 then testMetabaseAccess = false 	' the correct value will be 1 or 2 (accounts that bellong to the current website's application pool)
+						return testMetabaseAccess
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>CRITICAL!</Risk>
+			<Color>red</Color>
+			<Success.Comment>It is possible to use WMI to list from the Metabase the Annonymous account's details (i.e. username and password)</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WMI to list from the Metabase the Anonymous account's Details</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+		<vulnerability>
+			<ID>WMI.Enabled.Create.Processes</ID>
+			<Name>WMI.Enabled.Create.Processes</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>yes</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WMIEnabled_CreateProcesses">
+				<![CDATA[
+					
+					Private function WMIEnabled_CreateProcesses
+						dim intProcessID, errReturn
+						try							
+							dim winObj = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+							dim objStartup = winObj.get("Win32_ProcessStartup")
+							dim objConfig = objStartup.SpawnInstance_
+							objConfig.ShowWindow = 12 ' HIDDEN_WINDOW const
+							dim objProcess = GetObject("winmgmts:root\cimv2:Win32_Process")
+							errReturn = objProcess.Create("..\Microsoft.NET\Framework\v1.1.4322\csc.exe",,objConfig,intProcessID)	
+						catch
+							return false
+						end try
+						if errReturn = 0 then
+							return true
+						else 		
+							return false
+						end if
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>High</Risk>
+			<Color>red</Color>
+			<Success.Comment>It is possible to use WMI to create new processes on the server (i.e. execute commands)</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WMI to create new processes on the server</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+-->
+
+	</vulnerability>
+</MSHE.VulXML>

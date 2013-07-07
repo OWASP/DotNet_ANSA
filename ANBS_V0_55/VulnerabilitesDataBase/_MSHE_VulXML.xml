@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID></ID>
+	<Name></Name>
+	<Description></Description>
+	<Language></Language>
+	<Page.Directives>
+			<![CDATA[
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>x</ID>
+		<Name>x</Name>
+		<Description></Description>
+		<Require.Admin.Rights></Require.Admin.Rights>
+		<Require.Full.Trust></Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="x">
+			<![CDATA[
+
+				Private function x
+					try 	
+						return true
+					catch					
+						return false
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Low</Risk>
+		<Color>green</Color>
+		<Success.Comment>Success</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes></DevelopmentNotes>
+
+		<vulnerability>
+			<ID>xx</ID>
+			<Name>xx</Name>
+			<Description></Description>
+			<Require.Admin.Rights></Require.Admin.Rights>
+			<Require.Full.Trust></Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="xx">
+				<![CDATA[
+	
+					Private function xx
+	
+						try 	
+							return true
+						catch					
+							return false
+						end try									
+					end function
+					
+				 ]]>
+			</Test.Source.Code>
+			<Risk>low</Risk>
+			<Color>green</Color>
+			<Success.Comment>success</Success.Comment>
+			<Fail.Comment>fail</Fail.Comment>
+			<Solution.Description></Solution.Description>
+			<DevelopmentNotes></DevelopmentNotes>
+		</vulnerability>
+	</vulnerability>
+
+
+</MSHE.VulXML>

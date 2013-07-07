@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>WSH</ID>
+	<Name>WSH tests</Name>
+	<Description>Testing to see if WSH (Windows Script Host) is making this server vulnerable to attakcs</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>WSH.Enabled</ID>
+		<Name>WSH.Enabled</Name>
+		<Description>Test to see if the WSH object is enabled and this user can make WSH calls</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="WSHEnabled">
+			<![CDATA[
+
+				Private function WSHEnabled
+					dim objProcessInfo , winObj, item , Process_properties, Process_user, Process_domain
+
+					try 	
+						winObj = CreateObject("WSCRIPT.SHELL")			
+						return true
+					catch					
+						return false
+					end try			
+				end function
+
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>orange</Color>
+		<Success.Comment>It is possible to create the WSH object</Success.Comment>
+		<Fail.Comment>It is NOT possible to create the WSH object (no more tests will be done)</Fail.Comment>
+		<Solution.Description>WSH access can be disabled by ACLing the "c:\windows\system32\scrrun.dll" file</Solution.Description>
+
+
+
+		<vulnerability>
+			<ID>WSH.Enabled.Create.Processes</ID>
+			<Name>WSH.Enabled.Create.Processes</Name>
+			<Description></Description>
+			<Require.Admin.Rights>no</Require.Admin.Rights>
+			<Require.Full.Trust>yes</Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="WSHEnabled_CreateProcesses">
+				<![CDATA[
+					
+					Private function WSHEnabled_CreateProcesses
+						dim intProcessID, errReturn
+						try	
+							dim cmdToExecute = "..\..\Microsoft.NET\Framework\v1.1.4322\csc.exe" ' the base directory for the WSH is 'c:\windows\system32\inetsrv'
+							dim winObj = CreateObject("WSCRIPT.SHELL")				
+						  	Call winObj.Run (cmdToExecute , 0, True)
+							return true
+
+						catch
+							return false
+						end try
+					end function
+
+				 ]]>
+			</Test.Source.Code>
+			<Risk>High</Risk>
+			<Color>red</Color>
+			<Success.Comment>It is possible to use WSH to create new processes on the server (i.e. execute commands)</Success.Comment>
+			<Fail.Comment>It is NOt possible to use the WSH to create new processes on the server</Fail.Comment>
+			<Solution.Description></Solution.Description>
+		</vulnerability>
+
+
+
+	</vulnerability>
+
+
+</MSHE.VulXML>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>TokenHandles</ID>
+	<Name>TokenHandles</Name>
+	<Description>Search for Security Token Handles</Description>
+	<Language>.aspx</Language>
+	<Page.Directives>
+			<![CDATA[			
+				<%@ Import namespace="System.Diagnostics" %>	
+				<%@ Import namespace="System.Reflection" %>	
+				<%@ Import namespace="System.Security.Principal" %>	
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+
+				Declare Auto Function RevertToSelf Lib "advapi32.dll" () As Integer
+
+				Dim MSCorLib_Dll = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\mscorlib.dll"
+
+				Private Function InvokeMethod_for_Assembly(assemblyName,className,methodName,publicOrPrivateFlag,arrayParams)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(AssemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(ClassName)
+					InvokeMethod_for_Assembly = Reflected_Class.InvokeMember(methodName,publicOrPrivateFlag or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, Nothing,arrayParams)			
+				end function
+
+'				Public Function InvokePrivateMember(objClassToReflect, strPrivateMethodToCall, objArrayWithParameters)
+'					dim objType as Type = objClassToReflect.GetType()
+'					InvokePrivateMember = objType.InvokeMember(strPrivateMethodToCall,BindingFlags.NonPublic or BindingFlags.Instance or BindingFlags.InvokeMethod, Nothing, objClassToReflect,objArrayWithParameters)
+'				end function
+
+
+				Public Structure SECURITY_TOKEN_HANDLE
+					Public securityTokenID as Integer
+					Public securityTokenName as String
+				end Structure
+
+				Private objsecurityTokenHandle as SECURITY_TOKEN_HANDLE
+
+				Public ArrayTokensFound as new ArrayList	
+
+
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>TokenHandles.List</ID>
+		<Name>TokenHandles.List</Name>
+		<Description>Find Security Token Handles</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="tokenHandlesList">
+			<![CDATA[
+
+				Private function tokenHandlesList
+					try 	
+
+						dim strIdentityBeforeRevertToSelf =  WindowsIdentity.GetCurrent().name	
+						RevertToSelf
+						dim strIdentityAfterRevertToSelf =  WindowsIdentity.GetCurrent().name	
+				
+						dim objCurrentProcess = Process.GetCurrentProcess			
+				
+						Dim IntCurrentHandle
+						Dim ObjGetCurrentToken
+						Dim strResolvedTokenName	
+						Dim intHandleCount
+						try 
+							intHandleCount	= objCurrentProcess.HandleCount
+						catch
+							intHandleCount	= 2000
+						end try
+						for IntCurrentHandle = 0 to intHandleCount
+							ObjGetCurrentToken = IntPtr.op_Explicit(IntCurrentHandle*4)		
+							try
+								strResolvedTokenName = InvokeMethod_for_Assembly(MSCorLib_Dll,"System.Security.Principal.WindowsIdentity","_ResolveIdentity",BindingFlags.NonPublic,New Object() {ObjGetCurrentToken})		
+								if strResolvedTokenName <> "" then
+									if (strResolvedTokenName <> strIdentityBeforeRevertToSelf) and (strResolvedTokenName <> strIdentityAfterRevertToSelf) then
+										objsecurityTokenHandle = new SECURITY_TOKEN_HANDLE
+										objsecurityTokenHandle.securityTokenID = 1 ' IntCurrentHandle*4
+										objsecurityTokenHandle.securityTokenName = strResolvedTokenName
+										if not ArrayTokensFound.Contains(objsecurityTokenHandle) then 
+											ArrayTokensFound.add(objsecurityTokenHandle)
+										end if
+									end if
+								end if
+					
+			 				catch
+								return ("error!")
+							end try
+						next
+						Dim strResponse
+						dim i
+						if ArrayTokensFound.Count > 0 then
+							for i = 0 to ArrayTokensFound.Count -1 
+								strResponse = strResponse + " " + ArrayTokensFound(i).securityTokenName
+							next
+							return cstr(ArrayTokensFound.Count) + " extra Accounts discovered: " + strResponse 
+						else
+							return False
+						end if
+					catch					
+						return false
+					end try									
+				end function
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>CRITICAL!</Risk>
+		<Color>Red</Color>
+		<Success.Comment>it was possible to find other Security Token Handles which (on most situations) can be used to impersontate those user account</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes></DevelopmentNotes>
+
+		<vulnerability>
+			<ID>TokenHandles.SystemToken</ID>
+			<Name>TokenHandles.SystemToken</Name>
+			<Description>See if the </Description>
+			<Require.Admin.Rights></Require.Admin.Rights>
+			<Require.Full.Trust></Require.Full.Trust>
+			<Test.Source.Code mainFunctionName="TokenHandlesSystemToken">
+				<![CDATA[
+	
+					Private function TokenHandlesSystemToken												
+						try 		
+							Dim i
+							for i = 0 to ArrayTokensFound.Count -1 	
+								if ArrayTokensFound(i).securityTokenName = "NT AUTHORITY\SYSTEM"
+									return True
+								end if
+							next
+							return False
+						catch					
+							return False
+						end try									
+					end function
+					
+				 ]]>
+			</Test.Source.Code>
+			<Risk>High</Risk>
+			<Color>Red</Color>
+			<Success.Comment>One of the Tokens found was the 'NT AUTHORITY\SYSTEM' Token </Success.Comment>
+			<Fail.Comment>fail</Fail.Comment>
+			<Solution.Description></Solution.Description>
+			<DevelopmentNotes></DevelopmentNotes>
+		</vulnerability>
+	</vulnerability>
+
+
+</MSHE.VulXML>

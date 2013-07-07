@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>RevertToSelf</ID>
+	<Name>RevertToSelf</Name>
+	<Description>Using RevertToSelf to change the current identity of the running thread and using this account to test for more vulnerabilites</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+				<%@ Import namespace="System.Reflection" %>
+				<%@ Import namespace="System.Security.Principal"%>
+				<%@ Import namespace="System.Diagnostics" %>
+
+				<%
+					getCurrentThreadIdentity
+				%>					
+			 ]]>
+	</Page.Directives>	
+	<Shared.Source.Code>
+			<![CDATA[
+
+				Declare Function RevertToSelf Lib "advapi32.dll" Alias "RevertToSelf" () As Boolean
+
+				Private CurrentThreadIdentity
+				Private successfullyCalledRevertToSelf
+			
+				Private sub getCurrentThreadIdentity()
+					CurrentThreadIdentity = WindowsIdentity.GetCurrent().name
+				end sub
+						
+
+				Private System_Dll as String = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\system.dll"
+				Private System_Web_Dll as String = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\system.web.dll"
+				Private objMicrosoftWin32UnsafeNativeMethods = CreateInstance_for_Instance(System_Dll, "Microsoft.Win32.UnsafeNativeMethods","",BindingFlags.Public)
+				Private objSystemNetUnSafeNclNativeMethods = CreateInstance_for_Instance(System_Dll, "System.Net.UnsafeNclNativeMethods","",BindingFlags.Public)
+				Private objSystemWebUnSafeNativeMethods = CreateInstance_for_Instance(System_Web_Dll, "System.Web.UnsafeNativeMethods","",BindingFlags.NonPublic)
+
+				Private Function InvokeMethod_for_Assembly(assemblyName,className,methodName,publicOrPrivateFlag,arrayParams)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(AssemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(ClassName)
+					InvokeMethod_for_Assembly = Reflected_Class.InvokeMember(methodName,publicOrPrivateFlag or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, Nothing,arrayParams)			
+				end function
+	
+				Private Function CreateInstance_for_Instance(assemblyName,className,methodName, publicOrPrivateFlag)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(assemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(className)
+					CreateInstance_for_Instance = Reflected_Class.InvokeMember(methodName, publicOrPrivateFlag or BindingFlags.Instance or BindingFlags.CreateInstance, Nothing, Reflected_Class , Nothing) 
+				end function	
+
+				Public Function InvokePrivateMemberStatic(objClassToReflect, strPrivateMethodToCall, objArrayWithParameters)
+					dim objType as Type = objClassToReflect.GetType()
+					InvokePrivateMemberStatic = objType.InvokeMember(strPrivateMethodToCall,BindingFlags.NonPublic or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, objClassToReflect,objArrayWithParameters)
+				end function
+
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>RevertToSelf.Reflection</ID>
+		<Name>RevertToSelf.Reflection</Name>
+		<Description>See if it is possible to do call RevertToSelf using Reflection</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="RevertToSelfReflection">
+			<![CDATA[
+
+				Private function RevertToSelfReflection()
+					try 	
+						Dim revertToSelfMethodsAvailable as String = ""
+
+						if objMicrosoftWin32UnsafeNativeMethods.RevertToSelf then revertToSelfMethodsAvailable = revertToSelfMethodsAvailable + "Microsoft.Win32.UnsafeNativeMethods.RevertToSelf"
+						if InvokePrivateMemberStatic(objSystemNetUnSafeNclNativeMethods,"RevertToSelf",Nothing) then revertToSelfMethodsAvailable = revertToSelfMethodsAvailable + ", System.Net.UnSafeNclNativeMethods.RevertToSelf"
+						if InvokePrivateMemberStatic(objSystemWebUnSafeNativeMethods,"RevertToSelf",Nothing) then revertToSelfMethodsAvailable = revertToSelfMethodsAvailable + ", System.Web.UnSafeNativeMethods.RevertToSelf"
+						if InvokePrivateMemberStatic(WindowsIdentity.GetCurrent(),"_RevertToSelf",Nothing) then revertToSelfMethodsAvailable = revertToSelfMethodsAvailable + ", System.Security.Principal.WindowsIdentity._RevertToSelf"
+
+						if revertToSelfMethodsAvailable <> "" then
+							successfullyCalledRevertToSelf = true	
+							return "Using : " + revertToSelfMethodsAvailable
+						else
+							return false
+						end if
+					catch					
+						return false
+					end try									
+				end function
+
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It is possible to call RevertToSelf using Reflection</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+	</vulnerability>
+
+	<vulnerability>
+		<ID>RevertToSelf.Win32</ID>
+		<Name>RevertToSelf.Win32</Name>
+		<Description>See if it is possible to do a direct Win32 call to RevertToSelf </Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="RevertToSelfWin32">
+			<![CDATA[
+
+				Private function RevertToSelfWin32
+
+					try 	
+						if RevertToSelf then
+							successfullyCalledRevertToSelf = true	
+							return true
+						else 
+							return false
+						end if
+					catch					
+						return false						
+					end try	
+				end function
+
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It is possible to call RevertToSelf using Reflection</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+	</vulnerability>
+
+	<vulnerability>
+		<ID>RevertToSelf.AfterRevert.ChangeIdentity</ID>
+		<Name>RevertToSelf.AfterRevert.ChangeIdentity</Name>
+		<Description>See if RevertToSelf Changed the current Thread Identity</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="checkForChangedIdentity">
+			<![CDATA[
+
+				Private function checkForChangedIdentity
+					try 	
+						if (successfullyCalledRevertToSelf) and (CurrentThreadIdentity <> WindowsIdentity.GetCurrent().name) then
+							return "from " + CurrentThreadIdentity + " to " + WindowsIdentity.GetCurrent().name
+						else 
+							return false
+						end if
+					catch					
+						return false						
+					end try	
+				end function
+
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>High</Risk>
+		<Color>Red</Color>
+		<Success.Comment>RevertToSelf Changed the current Thread Identity</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+	</vulnerability>
+
+	<vulnerability>
+		<ID>RevertToSelf.AfterRevert.CheckIfRevertedToSystem</ID>
+		<Name>RevertToSelf.AfterRevert.CheckIfRevertedToSystem</Name>
+		<Description>See if the identity 'Reverted to' is the SYSTEM account</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="checkIfRevertedToSystem">
+			<![CDATA[
+
+				Private function checkIfRevertedToSystem
+					try 	
+						if (successfullyCalledRevertToSelf) and (WindowsIdentity.GetCurrent().name = "NT AUTHORITY\SYSTEM") then
+							return true
+						else 
+							return false
+						end if
+					catch					
+						return false						
+					end try	
+				end function
+
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>CRITICAL!</Risk>
+		<Color>Red</Color>
+		<Success.Comment>the identity 'Reverted to' is the SYSTEM account. This means that all code is executed with administrative privileges</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+	</vulnerability>
+
+	<vulnerability>
+		<ID>RevertToSelf.AfterRevert.CreateProcess</ID>
+		<Name>RevertToSelf.AfterRevert.CreateProcess</Name>
+		<Description>After Reflection see if it is possible to create a new process using 'system.diagnostics.process.start()'</Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>yes</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="AfterRevertCreateProcess">
+			<![CDATA[
+
+				Private function AfterRevertCreateProcess
+					try 	
+						if successfullyCalledRevertToSelf then
+							dim objCurrentProcess = process.GetCurrentProcess
+							dim processToStart = "..\..\Microsoft.NET\Framework\v1.1.4322\csc.exe"							
+							objCurrentProcess.Start(processToStart)
+							return true
+						else 
+							return false
+						end if
+					catch					
+						return false						
+					end try	
+				end function
+
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>High</Risk>
+		<Color>Red</Color>
+		<Success.Comment>After RevertToSelf it was possible to create a new process using 'system.diagnostics.process.start()'</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+	</vulnerability>
+
+
+</MSHE.VulXML>

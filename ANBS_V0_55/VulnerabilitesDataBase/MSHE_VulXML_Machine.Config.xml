@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MSHE.VulXML>
+	<ID>Machine.Config</ID>
+	<Name>Machine.Config</Name>
+	<Description>Check for Machine.Config vulnerabilities</Description>
+	<Language>.Aspx</Language>
+	<Page.Directives>
+			<![CDATA[
+				<%@ Import namespace="System.Reflection" %>
+				<%@ import Namespace="System.IO" %>
+			 ]]>
+	</Page.Directives>
+	<Shared.Source.Code>
+			<![CDATA[
+
+				Dim MSCorLib_Dll = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\mscorlib.dll"
+				Dim System_Dll = Environment.GetEnvironmentVariable("windir") +"\Microsoft.NET\Framework\v1.1.4322\system.dll"
+
+				Private Function InvokeMethod_for_Assembly(assemblyName,className,methodName,publicOrPrivateFlag,arrayParams)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(AssemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(ClassName)
+					InvokeMethod_for_Assembly = Reflected_Class.InvokeMember(methodName,publicOrPrivateFlag or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, Nothing,arrayParams)			
+				end function
+	
+				Private Function CreateInstance_for_Instance(assemblyName,className,methodName, publicOrPrivateFlag)
+					Dim System_web_Obj as [Assembly] = [Assembly].LoadFrom(assemblyName)
+					Dim Reflected_Class as Type = System_web_Obj.GetType(className)
+					CreateInstance_for_Instance = Reflected_Class.InvokeMember(methodName, publicOrPrivateFlag or BindingFlags.Instance or BindingFlags.CreateInstance, Nothing, Reflected_Class , Nothing) 
+				end function	
+
+				Public Function InvokePrivateMemberStatic(objClassToReflect, strPrivateMethodToCall, objArrayWithParameters)
+					dim objType as Type = objClassToReflect.GetType()
+					InvokePrivateMemberStatic = objType.InvokeMember(strPrivateMethodToCall,BindingFlags.NonPublic or BindingFlags.Static or BindingFlags.InvokeMethod, Nothing, objClassToReflect,objArrayWithParameters)
+				end function
+
+
+			 ]]>
+	</Shared.Source.Code>
+
+	<vulnerability>
+		<ID>Read.Machine.Config.file</ID>
+		<Name>Read.Machine.Config.file</Name>
+		<Description></Description>
+		<Require.Admin.Rights>no</Require.Admin.Rights>
+		<Require.Full.Trust>no</Require.Full.Trust>
+		<Test.Source.Code mainFunctionName="readMachineConfigFile">
+			<![CDATA[
+
+				Private function readMachineConfigFile
+					try 	
+						Dim objConfig = CreateInstance_for_Instance(MSCorLib_Dll, "System.Security.Util.Config","",BindingFlags.Public)
+						Dim strMachineConfigDirectory = InvokePrivateMemberStatic(objConfig,"get_MachineDirectory",Nothing)
+						Dim xmlMachineConfig  as New System.XML.XMLdocument
+						xmlMachineConfig.Load(strMachineConfigDirectory + "machine.config")
+
+						return True
+					catch					
+						return false
+					end try									
+				end function
+
+		
+				
+			 ]]>
+		</Test.Source.Code>
+		<Risk>Medium</Risk>
+		<Color>Orange</Color>
+		<Success.Comment>It was possible to open directly the Machine.Config File</Success.Comment>
+		<Fail.Comment>fail</Fail.Comment>
+		<Solution.Description></Solution.Description>
+		<DevelopmentNotes>
+	
+				- Use the access to this file to discover further vulnerabilities (using XMLDOCUMENT to acccess the information)	
+
+'						dim rootElement = xmlMachineConfig.documentElement
+'						dim xmlElement
+'						For each xmlElement in rootElement 
+'							rw(xmlElement.Name)
+'							newline
+'						next
+
+		</DevelopmentNotes>	
+
+	</vulnerability>
+
+
+</MSHE.VulXML>

@@ -1,0 +1,7 @@
+- The colors and the names used to define the risk (low, medium, high and critical) should be placed inside a structure (or class) so that their are refered to as "critical.name" and "critical.color" objects instead of the current 'hard-coded' "critical" and "red" strings
+
+- Implement the WMI tests using internal .NET tests
+
+- Some solutions (for example Denying access to the IIS_WPG security group to the c:\windows\system32\wbem folder) are only effective once the current worker process (i.e. w3wp.exe) is recicled. This must be caused by the fact that that process already has the dlls in memory
+
+- Session variable 'Debug' (session("Debug")) is currently only working in ASPX pages (by default the sessions are not shared). One solution is to read the SamSheGlobalVariables.xml file directly
