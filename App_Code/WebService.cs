@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
-using O2.DotNetWrappers.ExtensionMethods;
+using FluentSharp.ExtensionMethods;
 using System.Web.Script.Serialization;
 using System.Web.Script.Services;
 using O2.DotNetWrappers.DotNet;
@@ -123,8 +123,8 @@ public class WebService : System.Web.Services.WebService
 
 	[WebMethod(EnableSession = true)]	
 	public string GetO2Logs()
-	{		
-		var logs = (PublicDI.log.LogRedirectionTarget as MemoryLogger).LogData.str();
+	{		        
+		var logs = (PublicDI.log.LogRedirectionTarget as Logger_DiagnosticsDebug).LogData.str();
 		var logData = new StringBuilder();
 		foreach (var line in logs.lines())
 		{

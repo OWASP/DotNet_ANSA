@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.SessionState;
 using O2.Kernel;
-using O2.DotNetWrappers.ExtensionMethods;
+using FluentSharp.ExtensionMethods;
 
 namespace O2.WebREPL
 {
