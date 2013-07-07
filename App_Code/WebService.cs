@@ -73,7 +73,7 @@ public class WebService : System.Web.Services.WebService
 
 	[WebMethod(EnableSession = true)]
 	public LogEntry LogRequest(string snippet)
-	{
+	{        
 		var request = HttpContext.Current.Request;
 		var logEntry = new LogEntry()
 			{
@@ -84,7 +84,7 @@ public class WebService : System.Web.Services.WebService
 				Headers = request.Headers.Keys.toList().Select((key) => "{0} : {1}".format(key, request.Headers[key.str()])).asString(),
 				Refferer = request.UrlReferrer.str(),
 				RequestedAt = DateTime.Now.ToLongTimeString(),
-				Snippet = snippet
+				//Snippet = snippet
 			};
 
 		lock (saving)
@@ -101,7 +101,7 @@ public class WebService : System.Web.Services.WebService
 
 	[WebMethod(EnableSession = true)]
 	public int SaveSnippet(string snippet)
-	{
+	{        
 		"[SaveSnippet] saving snippet: {0}".info(snippet);
 		var targetDir = AppDomain.CurrentDomain.BaseDirectory.pathCombine("User_Snippets");
 		var id = targetDir.files().size() + 1;
