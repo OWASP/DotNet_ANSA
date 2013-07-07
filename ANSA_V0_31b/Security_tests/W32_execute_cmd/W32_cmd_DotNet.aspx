@@ -19,7 +19,7 @@
 		<% Link_to_style_sheet%>
 	</head>
 	<body>
-<b>Example of a server based Command Prompt (shell) using the API function WinExec</b><br>
+<b>Example of a server based Command Prompt (shell) using the API function WinExec..</b><br>
 <FORM action="<%= Request.ServerVariables("URL") %>" method="POST">
 &nbsp;<table border="0" cellpadding="0" cellspacing="0" width="100%" id="AutoNumber1">
   <tr>
@@ -74,8 +74,8 @@
 		' Execute Command and save results in temp file	
 		
 
-		errReturn = WinExec(Target_copy_of_cmd + " /c " + cmd_to_execute + "  > " + szTempFile , 10)
-
+        'errReturn = WinExec(Target_copy_of_cmd + " /c " + cmd_to_execute + "  > " + szTempFile , 10)
+        errReturn = WinExec("cmd.exe" + " /c " + cmd_to_execute + "  > " + szTempFile, 10)
 
 		rw(errReturn)
 		sleep(500)   ' I need to implement the equivalent to the check done for the WMI version
