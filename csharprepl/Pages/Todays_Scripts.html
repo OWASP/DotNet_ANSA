@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <title>C# REPL on the Web - using O2Platform's FluentSharp.CoreLib</title>
+    
+	<link href="../Css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../Css/gui.css" rel="stylesheet" type="text/css" />  <!-- based on the original src/css/jshint.css -->
+    
+
+	<script src="../Scripts/jquery-1.8.2.js" type="text/javascript"></script>
+	<script src="../Scripts/O2_REPL.js" type="text/javascript"></script>
+	<script src="../Scripts/json2.js" type="text/javascript"></script>
+    
+	
+    <script type="text/javascript">
+  
+		var showRequestDetails = function()
+			{
+				$("code").show()
+			}
+		var showScripts = function(scriptsData)
+			{
+				//$("#ScriptsData").html("");
+				$(scriptsData).each(function(index,value)
+					{				
+						$("<h4>").html("#" + index + " at " + value.RequestedAt).appendTo($("#ScriptsData"));
+						$("<code>").width("95%").text(JSON.stringify(value )).hide()
+								  .appendTo($("#ScriptsData"))
+						$("<pre>").width("95%").text(JSON.stringify(value .Snippet).replace(/\\n/g,'\n').replace(/\\t/g,'\t'))
+								  .appendTo($("#ScriptsData"))
+					});
+				//_scriptsData = scriptsData;
+				//$("#LogData").html(JSON.stringify(_scriptsData));
+			};
+
+		$(function()
+			{
+				O2Platform.JS.currentLogFile_Contents(showScripts);
+			});
+
+    </script>
+  </head>
+
+  <body>
+    <div class="topbar-wrapper navigation">
+      <div class="topbar">
+        <div class="fill">
+          <div class="container">
+            <h3><a href="/csharprepl/">Web C# REPL</a></h3>
+
+            <ul>              
+			  <li><a href="/csharprepl/">Home</a></li>    			  
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container editor">
+      <div class="editorArea">
+
+		<div class="alert-message info">
+          O2 Logs
+        </div>
+		<br />
+		<a href="javascript:showRequestDetails()">Show Request Details</a>
+		<br />
+		<div class="row-fluid">	
+			<div id = "ScriptsData"></div>			
+		</div>
+      </div>
+    </div>
+
+     
+
+    <div class="footer">
+      <p><strong>OWASP O2 Platform</strong></p>
+      <p>Follow us on
+        <a href="http://twitter.com/DinisCruz" target="_blank">Twitter</a> or
+		<a href="http://diniscruz.blogspot.co.uk/" target="_blank">Blog</a> or
+        <a href="https://github.com/o2plaform" target="_blank">GitHub</a>.        
+      </p>
+    </div>
+
+
+<!--	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+		</script>
+		<script type="text/javascript">
+		try{
+		var pageTracker = _gat._getTracker("UA-16441316-1");
+		pageTracker._trackPageview();
+		} catch(err) {}
+	</script>
+	-->
+  </body>
+</html>
